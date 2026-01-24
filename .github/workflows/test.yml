@@ -9,13 +9,9 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: macos-13
-            os_name: ventura
-          - os: macos-14
-            os_name: sonoma
           - os: macos-15
             os_name: sequoia
-          - os: macos-16
+          - os: macos-26
             os_name: tahoe
     steps:
       - name: Checkout
@@ -25,4 +21,4 @@ jobs:
         run: swift test
 
       - name: Build
-        run: swift build --configuration release --arch arm64 --arch x86_64
+        run: swift build --configuration release --arch arm64
