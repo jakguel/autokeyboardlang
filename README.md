@@ -12,14 +12,30 @@ Automatic keyboard input language switching for macOS.
 
 ## Installation
 
-The easiest way to install `autokbisw` as a background service is by using [Homebrew](https://brew.sh):
+### Install from this fork (macOS 15+ Sequoia/Tahoe, arm64 only)
+
+This fork provides pre-built binaries for macOS 15 (Sequoia) and macOS 26 (Tahoe) on Apple Silicon:
+
+```sh
+brew tap charliejones1/autokbisw
+brew install autokbisw
+brew services start autokbisw
+```
+
+No Xcode installation required! This version uses pre-built binaries.
+
+### Install from upstream (all macOS versions)
+
+The original version from [ohueter](https://github.com/ohueter/autokbisw) supports more macOS versions but requires compilation:
 
 ```sh
 brew install ohueter/tap/autokbisw
 brew services start autokbisw
 ```
 
-Please note that `autokbisw` is compiled from source by Homebrew, so a full installation of Xcode.app is required. Installing just the Command Line Tools is not sufficient.
+Please note that this requires a full installation of Xcode.app. Installing just the Command Line Tools is not sufficient.
+
+---
 
 `autokbisw` requires privileges to monitor all keyboard input. You need to grant these privileges on the first start of the service.
 
