@@ -12,9 +12,9 @@ Automatic keyboard input language switching for macOS.
 
 ## Installation
 
-### Install from this fork (macOS 15+ Sequoia/Tahoe, arm64 only)
+### Install via Homebrew (macOS 15+ Sequoia/Tahoe, arm64 only)
 
-This fork provides pre-built binaries for macOS 15 (Sequoia) and macOS 26 (Tahoe) on Apple Silicon:
+Pre-built binaries for macOS 15 (Sequoia) and macOS 26 (Tahoe) on Apple Silicon:
 
 ```sh
 brew tap jakguel/autokeyboardlang
@@ -30,7 +30,7 @@ The original version from [ohueter](https://github.com/ohueter/autokbisw) suppor
 
 ```sh
 brew install ohueter/tap/autokbisw
-brew services start autokeyboardlang
+brew services start autokbisw
 ```
 
 Please note that this requires a full installation of Xcode.app. Installing just the Command Line Tools is not sufficient.
@@ -41,13 +41,9 @@ Please note that this requires a full installation of Xcode.app. Installing just
 
 ### Upgrading an existing installation
 
-If you already have `autokeyboardlang` installed, you can upgrade it by running the following command:
-
 ```sh
-brew upgrade ohueter/tap/autokbisw
+brew upgrade autokeyboardlang
 ```
-
-This will update the formula to the latest version and reinstall it.
 
 ## Getting started
 
