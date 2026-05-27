@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script to update SHA256 checksums in the autokbisw formula
+# Script to update SHA256 checksums in the autokeyboardlang formula
 
 VERSION="2.1.0"
 GITHUB_REPO="jakguel/autokeyboardlang"
