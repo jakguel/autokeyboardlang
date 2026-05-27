@@ -5,12 +5,17 @@ on:
     branches:
       - master
 
+permissions:
+  contents: write
+
 jobs:
   tag:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -20,7 +25,5 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           default_bump: patch
           tag_prefix: v
-          major_string_token: "BREAKING CHANGE,!,major"
-          minor_string_token: "feat"
-          patch_string_token: "fix,chore,docs,refactor,ci,test,perf,build,revert,style"
+          custom_release_rules: "feat:minor,feat!:major"
           create_annotated_tag: false
