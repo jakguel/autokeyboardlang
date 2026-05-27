@@ -22,7 +22,7 @@ jobs:
       - name: Bump version and push tag
         uses: mathieudutour/github-tag-action@v6.2
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
           default_bump: patch
           tag_prefix: v
           custom_release_rules: "feat:minor,feat!:major"

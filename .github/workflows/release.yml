@@ -5,6 +5,9 @@ on:
     tags:
       - '*'
 
+permissions:
+  contents: write
+
 jobs:
   publish:
     name: Publish binaries for ${{ matrix.os }} ${{ matrix.os_name }} (${{ matrix.arch }})
