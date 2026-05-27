@@ -81,3 +81,57 @@ jobs:
           asset_name: SHA256SUMS
           tag: ${{ github.ref }}
           overwrite: true
+
+  update-tap:
+    needs: publish-checksums
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout tap repo
+        uses: actions/checkout@v3
+        with:
+          repository: jakguel/homebrew-autokeyboardlang
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+
+      - name: Extract version
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
+
+      - name: Download SHA256SUMS
+        run: |
+          curl -fSL "https://github.com/jakguel/autokeyboardlang/releases/download/${{ github.ref_name }}/SHA256SUMS" -o SHA256SUMS
+          echo "SEQUOIA_SHA=$(grep 'arm64_sequoia' SHA256SUMS | awk '{print $1}')" >> $GITHUB_ENV
+          echo "TAHOE_SHA=$(grep 'arm64_tahoe' SHA256SUMS | awk '{print $1}')" >> $GITHUB_ENV
+
+      - name: Update formula
+        env:
+          FORMULA: Formula/autokeyboardlang.rb
+          VERSION: ${{ env.VERSION }}
+          SEQUOIA_SHA: ${{ env.SEQUOIA_SHA }}
+          TAHOE_SHA: ${{ env.TAHOE_SHA }}
+        run: |
+          python3 - <<'EOF'
+          import re, os
+          formula_path = os.environ['FORMULA']
+          formula = open(formula_path).read()
+          version     = os.environ['VERSION']
+          sequoia_sha = os.environ['SEQUOIA_SHA']
+          tahoe_sha   = os.environ['TAHOE_SHA']
+
+          formula = re.sub(r'version "[^"]*"', f'version "{version}"', formula)
+          formula = re.sub(
+              r'(arm64_tahoe[^\n]*\n\s+sha256 ")[^"]+(")',
+              rf'\g<1>{tahoe_sha}\g<2>', formula)
+          formula = re.sub(
+              r'(arm64_sequoia[^\n]*\n\s+sha256 ")[^"]+(")',
+              rf'\g<1>{sequoia_sha}\g<2>', formula)
+
+          open(formula_path, 'w').write(formula)
+          print(f"Updated to v{version}  sequoia={sequoia_sha[:8]}…  tahoe={tahoe_sha[:8]}…")
+          EOF
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/autokeyboardlang.rb
+          git commit -m "chore: bump autokeyboardlang to ${{ github.ref_name }}"
+          git push
