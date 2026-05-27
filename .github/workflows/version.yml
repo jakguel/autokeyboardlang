@@ -1,0 +1,26 @@
+name: Auto Version
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  tag:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Bump version and push tag
+        uses: mathieudutour/github-tag-action@v6.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          default_bump: patch
+          tag_prefix: v
+          major_string_token: "BREAKING CHANGE,!,major"
+          minor_string_token: "feat"
+          patch_string_token: "fix,chore,docs,refactor,ci,test,perf,build,revert,style"
+          create_annotated_tag: false
