@@ -36,12 +36,15 @@ jobs:
 
       - name: Generate archive name
         id: archive-name
+        env:
+          TAG: ${{ inputs.tag_name || github.ref_name }}
+          ARCH: ${{ matrix.arch }}
+          OS_NAME: ${{ matrix.os_name }}
         run: |
-          TAG=${{ inputs.tag_name || github.ref_name }}
-          if [ "${{ matrix.arch }}" = "arm64" ]; then
-            echo "value=autokeyboardlang-${TAG}.arm64_${{ matrix.os_name }}.tar.gz" >> $GITHUB_OUTPUT
+          if [ "$ARCH" = "arm64" ]; then
+            echo "value=autokeyboardlang-${TAG}.arm64_${OS_NAME}.tar.gz" >> $GITHUB_OUTPUT
           else
-            echo "value=autokeyboardlang-${TAG}.${{ matrix.os_name }}.tar.gz" >> $GITHUB_OUTPUT
+            echo "value=autokeyboardlang-${TAG}.${OS_NAME}.tar.gz" >> $GITHUB_OUTPUT
           fi
 
       - name: Create archive
@@ -109,11 +112,14 @@ jobs:
           token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
 
       - name: Extract version
-        run: echo "VERSION=${{ inputs.tag_name != '' && inputs.tag_name || github.ref_name }}" | sed 's/VERSION=v/VERSION=/' >> $GITHUB_ENV
+        env:
+          TAG_INPUT: ${{ inputs.tag_name != '' && inputs.tag_name || github.ref_name }}
+        run: echo "VERSION=${TAG_INPUT}" | sed 's/VERSION=v/VERSION=/' >> $GITHUB_ENV
 
       - name: Download SHA256SUMS
+        env:
+          TAG: ${{ inputs.tag_name || github.ref_name }}
         run: |
-          TAG=${{ inputs.tag_name || github.ref_name }}
           curl -fSL "https://github.com/jakguel/autokeyboardlang/releases/download/${TAG}/SHA256SUMS" -o SHA256SUMS
           echo "SEQUOIA_SHA=$(grep 'arm64_sequoia' SHA256SUMS | awk '{print $1}')" >> $GITHUB_ENV
           echo "TAHOE_SHA=$(grep 'arm64_tahoe' SHA256SUMS | awk '{print $1}')" >> $GITHUB_ENV
@@ -146,9 +152,11 @@ jobs:
           EOF
 
       - name: Commit and push
+        env:
+          COMMIT_TAG: ${{ inputs.tag_name || github.ref_name }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add Formula/autokeyboardlang.rb
-          git commit -m "chore: bump autokeyboardlang to ${{ inputs.tag_name || github.ref_name }}"
+          git commit -m "chore: bump autokeyboardlang to ${COMMIT_TAG}"
           git push
