@@ -2,7 +2,15 @@
 
 Automatically switches your macOS keyboard input source (language/layout) when you switch between physical keyboards.
 
-> Requires macOS 15+ (Sequoia/Tahoe) on Apple Silicon — no Xcode required
+## Requirements
+
+| | |
+|---|---|
+| **macOS** | 15 Sequoia or 26 Tahoe |
+| **Hardware** | Apple Silicon (M1 or newer) — Intel Macs not supported |
+| **Architecture** | arm64 only |
+
+> If you are on an older macOS version or Intel Mac, this project will not work.
 
 ## Installation
 
