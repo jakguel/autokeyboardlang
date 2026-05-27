@@ -4,9 +4,9 @@
 import PackageDescription
 
 let package = Package(
-    name: "autokbisw",
+    name: "autokeyboardlang",
     products: [
-        .executable(name: "autokbisw", targets: ["autokbisw"]),
+        .executable(name: "autokeyboardlang", targets: ["autokeyboardlang"]),
         .library(name: "AutokbiswCore", targets: ["AutokbiswCore"]),
     ],
     dependencies: [
@@ -24,11 +24,11 @@ let package = Package(
             ]
         ),
         .target(
-            name: "autokbisw",
+            name: "autokeyboardlang",
             dependencies: ["AutokbiswCore"]
         ),
         .testTarget(
-            name: "autokbiswTests",
+            name: "autokeyboardlangTests",
             dependencies: ["AutokbiswCore"]
         ),
     ]
