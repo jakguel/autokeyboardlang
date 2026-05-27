@@ -30,7 +30,7 @@ The original version from [ohueter](https://github.com/ohueter/autokbisw) suppor
 
 ```sh
 brew install ohueter/tap/autokbisw
-brew services start autokbisw
+brew services start autokeyboardlang
 ```
 
 Please note that this requires a full installation of Xcode.app. Installing just the Command Line Tools is not sufficient.

@@ -63,3 +63,16 @@ xcuserdata
 
 # Test files
 *Tests.swift.plist
+
+# Serena
+.serena/cache/
+.serena/memories/
+
+# Beads
+.beads/*.db
+.beads/*.db-shm
+.beads/*.db-wal
+.beads/bd.sock
+.beads/daemon.*
+.beads/interactions.jsonl
+.beads/last-touched
