@@ -325,7 +325,7 @@ private extension IOKeyEventMonitor {
             notificationCenter,
             context,
             callback,
-            "com.autokbisw.settingsChanged" as CFString,
+            "com.autokeyboardlang.settingsChanged" as CFString,
             nil,
             .deliverImmediately
         )
@@ -336,7 +336,7 @@ private extension IOKeyEventMonitor {
         CFNotificationCenterRemoveObserver(
             notificationCenter,
             context,
-            CFNotificationName("com.autokbisw.settingsChanged" as CFString),
+            CFNotificationName("com.autokeyboardlang.settingsChanged" as CFString),
             nil
         )
     }
@@ -345,7 +345,7 @@ private extension IOKeyEventMonitor {
         log.trace("Posting settings changed notification")
         CFNotificationCenterPostNotification(
             notificationCenter,
-            CFNotificationName("com.autokbisw.settingsChanged" as CFString),
+            CFNotificationName("com.autokeyboardlang.settingsChanged" as CFString),
             nil,
             nil,
             true

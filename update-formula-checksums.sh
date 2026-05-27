@@ -3,7 +3,7 @@
 # Script to update SHA256 checksums in the autokbisw formula
 
 VERSION="2.1.0"
-GITHUB_REPO="charliejones1/autokbisw"
+GITHUB_REPO="jakguel/autokeyboardlang"
 
 echo "Downloading SHA256SUMS file..."
 curl -L "https://github.com/${GITHUB_REPO}/releases/download/v${VERSION}/SHA256SUMS" -o /tmp/SHA256SUMS
@@ -27,16 +27,16 @@ fi
 echo "Sequoia SHA256: $SEQUOIA_SHA"
 echo "Tahoe SHA256: $TAHOE_SHA"
 
-echo "Updating Formula/autokbisw.rb..."
-sed -i.bak "s/SEQUOIA_SHA256_HERE/$SEQUOIA_SHA/" Formula/autokbisw.rb
-sed -i.bak "s/TAHOE_SHA256_HERE/$TAHOE_SHA/" Formula/autokbisw.rb
+echo "Updating Formula/autokeyboardlang.rb..."
+sed -i.bak "s/SEQUOIA_SHA256_HERE/$SEQUOIA_SHA/" Formula/autokeyboardlang.rb
+sed -i.bak "s/TAHOE_SHA256_HERE/$TAHOE_SHA/" Formula/autokeyboardlang.rb
 
 echo "Done! Formula updated successfully."
 echo ""
 echo "Next steps:"
-echo "1. Review the changes: git diff Formula/autokbisw.rb"
-echo "2. Commit: git add Formula/autokbisw.rb && git commit -m 'Update formula checksums for v${VERSION}'"
+echo "1. Review the changes: git diff Formula/autokeyboardlang.rb"
+echo "2. Commit: git add Formula/autokeyboardlang.rb && git commit -m 'Update formula checksums for v${VERSION}'"
 echo "3. Push: git push origin master"
-echo "4. Install with: brew tap charliejones1/autokbisw && brew install autokbisw"
+echo "4. Install with: brew tap jakguel/autokeyboardlang && brew install autokeyboardlang"
 
 rm /tmp/SHA256SUMS
