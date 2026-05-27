@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import CoreGraphics
+import IOKit.hid
 
 /// Provides a clean interface for checking and requesting Input Monitoring (TCC) permission.
 ///
@@ -26,24 +26,24 @@ public enum InputMonitoringPermission {
 
     /// Returns `true` if Input Monitoring permission is currently granted by the OS.
     ///
-    /// This call is non-blocking and has no side effects. Safe to call at any time.
+    /// Uses `IOHIDCheckAccess(kIOHIDRequestTypeListenEvent)` — the correct IOKit HID
+    /// API for apps that monitor keyboard events via IOHIDManager.
+    /// Non-blocking, no side effects.
     public static var isGranted: Bool {
         if #available(macOS 10.15, *) {
-            return CGPreflightListenEventAccess()
+            return IOHIDCheckAccess(kIOHIDRequestTypeListenEvent) == kIOHIDAccessTypeGranted
         }
-        // Pre-10.15: Input Monitoring TCC did not exist; HID access was unrestricted.
         return true
     }
 
     /// Requests Input Monitoring permission from the OS.
     ///
-    /// On first call without permission, this opens System Settings →
-    /// Privacy & Security → Input Monitoring so the user can grant access.
-    /// Returns immediately — the permission is not granted synchronously.
-    /// The user must manually enable the toggle in System Settings.
+    /// Uses `IOHIDRequestAccess(kIOHIDRequestTypeListenEvent)` — adds the binary to
+    /// System Settings → Privacy & Security → Input Monitoring and returns immediately.
+    /// The user must manually enable the toggle.
     public static func request() {
         if #available(macOS 10.15, *) {
-            CGRequestListenEventAccess()
+            IOHIDRequestAccess(kIOHIDRequestTypeListenEvent)
         }
     }
 }
