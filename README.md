@@ -1,20 +1,10 @@
-# autokeyboardlang – Automatic keyboard input language switcher
+# autokeyboardlang
 
-Automatic keyboard input language switching for macOS.
+Automatically switches your macOS keyboard input source (language/layout) when you switch between physical keyboards.
 
-`autokeyboardlang` is made for those who use multiple keyboards with different key layouts (e.g. English and French), and frequently switch between them. It runs as a background service and remembers the last active keyboard input language for a specific keyboard and automatically activates it when typing on that keyboard again.
-
-## Features
-
-- Automatically switches the keyboard layout (input source) based on the connected keyboard
-- Identifies keyboards by their product name, hardware ID, and optionally the connected USB port (location ID)
-- Command-line interface to enable/disable switching for specific keyboards
+> Requires macOS 15+ (Sequoia/Tahoe) on Apple Silicon — no Xcode required
 
 ## Installation
-
-### Install via Homebrew (macOS 15+ Sequoia/Tahoe, arm64 only)
-
-Pre-built binaries for macOS 15 (Sequoia) and macOS 26 (Tahoe) on Apple Silicon:
 
 ```sh
 brew tap jakguel/autokeyboardlang
@@ -22,157 +12,72 @@ brew install autokeyboardlang
 brew services start autokeyboardlang
 ```
 
-No Xcode installation required! This version uses pre-built binaries.
+On first start, macOS will prompt for **Input Monitoring** permission under System Settings → Privacy & Security.
 
-### Install from upstream (all macOS versions)
-
-The original version from [ohueter](https://github.com/ohueter/autokbisw) supports more macOS versions but requires compilation:
-
-```sh
-brew install ohueter/tap/autokbisw
-brew services start autokbisw
-```
-
-Please note that this requires a full installation of Xcode.app. Installing just the Command Line Tools is not sufficient.
-
----
-
-`autokeyboardlang` requires privileges to monitor all keyboard input. You need to grant these privileges on the first start of the service.
-
-### Upgrading an existing installation
+### Upgrade
 
 ```sh
 brew upgrade autokeyboardlang
 ```
 
-## Getting started
+### Build from source
 
-- Begin typing with your first keyboard, so it becomes the **active keyboard**.
-- Select the desired **keyboard layout** for your first keyboard by selecting it in the menu bar or pressing the <kbd>🌐</kbd> key.
-- Begin typing with your second keyboard, so it becomes the **active keyboard**.
-- Select the desired **keyboard layout** for your second keyboard.
-- Repeat if you are using more keyboards.
-
-You should notice that after the first keystroke on any of your keyboards, the keyboard layout automatically switches to the selected one. Note that the keyboard layout switch happens **after** the first keystroke, so you won't have the selected keyboard layout at this time.
-
-## Enabling/disabling switching for specific keyboards
-
-By default, `autokeyboardlang` uses device identification data reported by the hardware to determine whether to enable automatic switching. However, some devices report incorrect information: keyboards may identify as mice (and thus be initially disabled), while mice may identify as keyboards (triggering unwanted input source switches). If you encounter either issue, you can manually enable or disable switching for specific devices using the command-line interface.
-
-### Listing Devices
-
-To list all known devices and their current status:
+Requires a full Xcode.app installation:
 
 ```sh
-autokeyboardlang list
-```
-
-This will display a numbered list of devices with their identifier, status (enabled/disabled), and the associated keyboard layout.
-
-Note: Devices only appear in this list after they've been used for text input while `autokeyboardlang` was running.
-
-### Enabling/disabling switching
-
-To enable keyboard layout switching for a specific keyboard:
-
-```sh
-autokeyboardlang enable <device number or identifier>
-```
-
-To disable keyboard layout switching for a specific keyboard:
-
-```sh
-autokeyboardlang disable <device number or identifier>
-```
-
-You can use either the device number (obtained from the `list` subcommand) or the device identifier to specify the keyboard.
-
-## Building from source
-
-Clone this repository, make sure you have a full Xcode.app installation, and run the following commands:
-
-```sh
+git clone https://github.com/jakguel/autokeyboardlang
 cd autokeyboardlang
 swift build --configuration release
 ```
 
-The output will provide the path to the built binary, likely `.build/release/autokeyboardlang`. You can run it from the `release` directory as is.
+## Getting started
 
-### Command-line arguments
+1. Type a few keys on your first keyboard so it becomes the **active** keyboard
+2. Switch to the desired layout via the menu bar or <kbd>🌐</kbd>
+3. Repeat for each keyboard you use
 
-```
-OVERVIEW: Automatic keyboard/input source switching for macOS.
+The layout switches **after** the first keystroke when changing keyboards.
 
-USAGE: autokeyboardlang [--verbose <verbosity>] [--location] <subcommand>
-
-OPTIONS:
-  -v, --verbose <verbosity>
-                          Print verbose output (1 = DEBUG, 2 = TRACE). (default: 0)
-  -l, --location          Use locationId to identify keyboards.
-        Note that the locationId changes when you plug a keyboard in a different port. Therefore using the locationId in the keyboards
-        identifiers means the configured language will be associated to a keyboard on a specific port.
-  -h, --help              Show help information.
-
-SUBCOMMANDS:
-  enable                  Enable input source switching for <device number or identifier>.
-  disable                 Disable input source switching for <device number or identifier>.
-  list                    List all known devices and their current status.
-  clear                   Clear all stored mappings and device settings.
-
-  See 'autokeyboardlang help <subcommand>' for detailed help.
-```
-
-## FAQ & Common issues
-
-### The installation fails with an XCode error.
-
-On some system configurations, the installation fails with XCode errors similar to those described in GitHub issues [#12](https://github.com/ohueter/autokbisw/issues/12) and [#28](https://github.com/ohueter/autokbisw/issues/28). In order to check if your system is affected, run
+## CLI
 
 ```sh
-xcode-select --print-path
+autokeyboardlang list                        # show all known devices and their status
+autokeyboardlang enable <device>             # enable switching for a device
+autokeyboardlang disable <device>            # disable switching for a device
+autokeyboardlang clear                       # reset all stored mappings
 ```
 
-in the terminal. The expected output is `/Applications/Xcode.app/Contents/Developer`. If the output on your system is different, run
+`<device>` is either the number from `list` or the full device identifier.
+
+Options: `--verbose 1|2` (debug/trace output), `--location` (include USB port in device ID)
+
+## Troubleshooting
+
+**Service not working after install**
 
 ```sh
-sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+brew services restart autokeyboardlang
 ```
 
-to set the correct path and (hopefully) fix the compilation.
+If that doesn't help, re-grant Input Monitoring permission by removing and re-adding the binary under System Settings → Privacy & Security → Input Monitoring:
+`/opt/homebrew/opt/autokeyboardlang/bin/autokeyboardlang`
 
-### autokeyboardlang doesn't work after installation.
-
-If `autokeyboardlang` isn't working after the first start of the service, try these solutions:
-
-1. Restart the service:
-
-   ```sh
-   brew services restart autokeyboardlang
-   ```
-
-2. Re-grant the required privileges to the service by removing and re-adding the executable under `System Preferences > Security & Privacy > Privacy > Input Monitoring`. The path to add should either be `/usr/local/bin/autokeyboardlang` (on Intel Macs) or `/opt/homebrew/opt/autokeyboardlang/bin/autokeyboardlang` (on Apple M1 Macs).
-
-### autokeyboardlang doesn't work as expected with my Logitech keyboard or mouse.
-
-It seems that some Logitech devices miss-identify as keyboard or mouse, although they're actually the respective other kind of device (see GitHub issues [#7](https://github.com/ohueter/autokbisw/issues/7) or [#18](https://github.com/ohueter/autokbisw/issues/18) for examples). If `autokeyboardlang` isn't working for you because of this issue, try enabling/disabling switching for specific devices using the command-line interface (see [Enabling/disabling switching for specific keyboards](#enablingdisabling-switching-for-specific-keyboards)). Open a new issue if it's still not working for your device.
-
-### Can autokeyboardlang be used with the `Automatically switch to a document's input source` option?
-
-`autokeyboardlang` is not compatible with the `Automatically switch to a document's input source` system option (found under System Settings > Keyboard > Input sources > Edit…). If the setting is turned on, `autokeyboardlang` might not work as expected (see [#33](https://github.com/ohueter/autokbisw/issues/33)).
-
-### Can autokeyboardlang be used with Karabiner-Elements?
-
-`autokeyboardlang` is not compatible with [Karabiner Elements](https://karabiner-elements.pqrs.org/), since it proxies keyboard events. That makes Karabiner appear as the system input device, and `autokeyboardlang` can't detect the original input device. However, you can manually configure Karabiner to switch keyboard layouts based on device ID and other variables, it just won't be _fully_ automated -- see [this GH answer](https://github.com/pqrs-org/Karabiner-Elements/issues/2230#issuecomment-2043513996).
-
-### autokeyboardlang is installed correctly but the background service does not changes the language?
-
-Try to unload and reload the plist and reboot (see [discussion for reference](https://github.com/ohueter/autokbisw/discussions/38#discussioncomment-9127439)):
+**Service running but not switching layouts**
 
 ```sh
 launchctl unload ~/Library/LaunchAgents/homebrew.mxcl.autokeyboardlang.plist
 launchctl load ~/Library/LaunchAgents/homebrew.mxcl.autokeyboardlang.plist
 ```
 
+**Logitech device not detected correctly**
+
+Some Logitech devices misidentify as keyboard or mouse. Use `autokeyboardlang enable` or `autokeyboardlang disable` to correct this manually.
+
+**Not compatible with:**
+
+- macOS "Automatically switch to a document's input source" (System Settings → Keyboard → Input Sources → Edit…)
+- [Karabiner-Elements](https://karabiner-elements.pqrs.org/) — proxies keyboard events, hiding the real device from autokeyboardlang
+
 ## Acknowledgements
 
-This program was originally developed by [Jean Helou](https://github.com/jeantil/autokbisw) ([@jeantil](https://github.com/jeantil)).
+Originally developed by [Jean Helou](https://github.com/jeantil/autokbisw). Extended by [ohueter](https://github.com/ohueter/autokbisw).
