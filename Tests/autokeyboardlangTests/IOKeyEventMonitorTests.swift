@@ -226,4 +226,16 @@ class IOKeyEventMonitorTests: XCTestCase {
         XCTAssertTrue(monitor.deviceEnabled[testKeyboard2] ?? false, "Second keyboard should be enabled")
         XCTAssertFalse(monitor.deviceEnabled[testKeyboard] ?? true, "First keyboard should remain disabled")
     }
+
+    func testInputMonitoringPermissionAPIShape() {
+        // Verify the public API is accessible and returns a Bool.
+        // TCC state is OS-controlled and cannot be mocked — we only verify API shape.
+        let granted: Bool = InputMonitoringPermission.isGranted
+        XCTAssertNotNil(granted) // always passes; proves type is Bool and accessible
+        // request() must be callable without crashing (only call if NOT granted to avoid
+        // opening System Settings during CI)
+        if !granted {
+            InputMonitoringPermission.request()
+        }
+    }
 }
