@@ -26,19 +26,23 @@ jobs:
             os_name: sequoia
           - os: macos-26
             os_name: tahoe
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Build binary
         run: swift build --configuration release --arch ${{ matrix.arch }}
 
       - name: Generate archive name
-        uses: haya14busa/action-cond@v1
         id: archive-name
-        with:
-          cond: ${{ matrix.arch == 'arm64' }}
-          if_true: autokeyboardlang-${{inputs.tag_name || github.ref_name}}.arm64_${{ matrix.os_name }}.tar.gz
-          if_false: autokeyboardlang-${{inputs.tag_name || github.ref_name}}.${{ matrix.os_name }}.tar.gz
+        run: |
+          TAG=${{ inputs.tag_name || github.ref_name }}
+          if [ "${{ matrix.arch }}" = "arm64" ]; then
+            echo "value=autokeyboardlang-${TAG}.arm64_${{ matrix.os_name }}.tar.gz" >> $GITHUB_OUTPUT
+          else
+            echo "value=autokeyboardlang-${TAG}.${{ matrix.os_name }}.tar.gz" >> $GITHUB_OUTPUT
+          fi
 
       - name: Create archive
         run: |
@@ -68,6 +72,8 @@ jobs:
   publish-checksums:
     needs: publish
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - name: Download all checksums
         uses: actions/download-artifact@v4
@@ -93,9 +99,11 @@ jobs:
   update-tap:
     needs: publish-checksums
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - name: Checkout tap repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: jakguel/homebrew-autokeyboardlang
           token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
