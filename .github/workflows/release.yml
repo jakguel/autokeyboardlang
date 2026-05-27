@@ -3,7 +3,12 @@ name: Publish
 on:
   push:
     tags:
-      - '*'
+      - 'v*'
+  workflow_call:
+    inputs:
+      tag_name:
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -32,8 +37,8 @@ jobs:
         id: archive-name
         with:
           cond: ${{ matrix.arch == 'arm64' }}
-          if_true: autokeyboardlang-${{github.ref_name}}.arm64_${{ matrix.os_name }}.tar.gz
-          if_false: autokeyboardlang-${{github.ref_name}}.${{ matrix.os_name }}.tar.gz
+          if_true: autokeyboardlang-${{inputs.tag_name || github.ref_name}}.arm64_${{ matrix.os_name }}.tar.gz
+          if_false: autokeyboardlang-${{inputs.tag_name || github.ref_name}}.${{ matrix.os_name }}.tar.gz
 
       - name: Create archive
         run: |
@@ -51,7 +56,7 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: .build/release/${{ steps.archive-name.outputs.value }}
           asset_name: ${{ steps.archive-name.outputs.value }}
-          tag: ${{ github.ref }}
+          tag: refs/tags/${{ inputs.tag_name || github.ref_name }}
           overwrite: true
 
       - name: Upload checksum artifact
@@ -82,7 +87,7 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: SHA256SUMS
           asset_name: SHA256SUMS
-          tag: ${{ github.ref }}
+          tag: refs/tags/${{ inputs.tag_name || github.ref_name }}
           overwrite: true
 
   update-tap:
@@ -96,11 +101,12 @@ jobs:
           token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
 
       - name: Extract version
-        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
+        run: echo "VERSION=${{ inputs.tag_name != '' && inputs.tag_name || github.ref_name }}" | sed 's/VERSION=v/VERSION=/' >> $GITHUB_ENV
 
       - name: Download SHA256SUMS
         run: |
-          curl -fSL "https://github.com/jakguel/autokeyboardlang/releases/download/${{ github.ref_name }}/SHA256SUMS" -o SHA256SUMS
+          TAG=${{ inputs.tag_name || github.ref_name }}
+          curl -fSL "https://github.com/jakguel/autokeyboardlang/releases/download/${TAG}/SHA256SUMS" -o SHA256SUMS
           echo "SEQUOIA_SHA=$(grep 'arm64_sequoia' SHA256SUMS | awk '{print $1}')" >> $GITHUB_ENV
           echo "TAHOE_SHA=$(grep 'arm64_tahoe' SHA256SUMS | awk '{print $1}')" >> $GITHUB_ENV
 
@@ -136,5 +142,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add Formula/autokeyboardlang.rb
-          git commit -m "chore: bump autokeyboardlang to ${{ github.ref_name }}"
+          git commit -m "chore: bump autokeyboardlang to ${{ inputs.tag_name || github.ref_name }}"
           git push
