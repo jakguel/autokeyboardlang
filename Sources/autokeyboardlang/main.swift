@@ -54,9 +54,20 @@ struct Autokbisw: ParsableCommand {
     var location = false
 
     mutating func run() throws {
+        print("autokeyboardlang started.")
+
         if verbose > 0 {
-            print("Starting with useLocation: \(location) - verbosity: \(verbose)")
+            print("useLocation: \(location), verbosity: \(verbose)")
         }
+
+        if !InputMonitoringPermission.isGranted {
+            InputMonitoringPermission.request()
+            fputs("Error: Input Monitoring permission required.\n", stderr)
+            fputs("Grant access in: System Settings → Privacy & Security → Input Monitoring\n", stderr)
+            fputs("Then restart autokeyboardlang.\n", stderr)
+            throw ExitCode.failure
+        }
+
         let monitor = Autokbisw.createMonitor(useLocation: location, verbosity: verbose)
         monitor?.start()
         CFRunLoopRun()
