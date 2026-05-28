@@ -15,53 +15,33 @@ permissions:
 
 jobs:
   publish:
-    name: Publish binaries for ${{ matrix.os }} ${{ matrix.os_name }} (${{ matrix.arch }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [macos-15, macos-26]
-        arch: [arm64]
-        include:
-          - os: macos-15
-            os_name: sequoia
-          - os: macos-26
-            os_name: tahoe
+    name: Publish .app bundle
+    runs-on: macos-26
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build binary
-        run: swift build --configuration release --arch ${{ matrix.arch }}
+      - name: Build bundle
+        run: make bundle
 
       - name: Generate archive name
         id: archive-name
         env:
           TAG: ${{ inputs.tag_name || github.ref_name }}
-          ARCH: ${{ matrix.arch }}
-          OS_NAME: ${{ matrix.os_name }}
-        run: |
-          if [ "$ARCH" = "arm64" ]; then
-            echo "value=autokeyboardlang-${TAG}.arm64_${OS_NAME}.tar.gz" >> $GITHUB_OUTPUT
-          else
-            echo "value=autokeyboardlang-${TAG}.${OS_NAME}.tar.gz" >> $GITHUB_OUTPUT
-          fi
+        run: echo "value=autokeyboardlang-${TAG}.zip" >> $GITHUB_OUTPUT
 
       - name: Create archive
-        run: |
-          cd .build/release
-          tar -czf ${{ steps.archive-name.outputs.value }} autokeyboardlang
+        run: zip -r ${{ steps.archive-name.outputs.value }} autokeyboardlang.app
 
       - name: Generate checksum
-        run: |
-          cd .build/release
-          shasum -a 256  ${{ steps.archive-name.outputs.value }} > SHA256SUM
+        run: shasum -a 256 ${{ steps.archive-name.outputs.value }} > SHA256SUM
 
       - name: Upload archive to release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: .build/release/${{ steps.archive-name.outputs.value }}
+          file: ./${{ steps.archive-name.outputs.value }}
           asset_name: ${{ steps.archive-name.outputs.value }}
           tag: refs/tags/${{ inputs.tag_name || github.ref_name }}
           overwrite: true
@@ -69,8 +49,8 @@ jobs:
       - name: Upload checksum artifact
         uses: actions/upload-artifact@v4
         with:
-          name: checksums-${{ matrix.os_name }}-${{ matrix.arch }}
-          path: .build/release/SHA256SUM
+          name: checksums
+          path: ./SHA256SUM
 
   publish-checksums:
     needs: publish
@@ -78,7 +58,7 @@ jobs:
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
-      - name: Download all checksums
+      - name: Download checksum
         uses: actions/download-artifact@v4
         with:
           path: checksums
@@ -86,11 +66,10 @@ jobs:
       - name: Combine checksums
         run: |
           cat checksums/**/SHA256SUM > SHA256SUMS
-          find checksums -type f -name "SHA256SUM" -exec cat {} + > SHA256SUMS
-          echo "Combined checksums:"
+          echo "Checksums:"
           cat SHA256SUMS
 
-      - name: Upload combined checksums to release
+      - name: Upload SHA256SUMS to release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -113,7 +92,7 @@ jobs:
 
       - name: Extract version
         env:
-          TAG_INPUT: ${{ inputs.tag_name != '' && inputs.tag_name || github.ref_name }}
+          TAG_INPUT: ${{ inputs.tag_name || github.ref_name }}
         run: echo "VERSION=${TAG_INPUT}" | sed 's/VERSION=v/VERSION=/' >> $GITHUB_ENV
 
       - name: Download SHA256SUMS
@@ -121,35 +100,42 @@ jobs:
           TAG: ${{ inputs.tag_name || github.ref_name }}
         run: |
           curl -fSL "https://github.com/jakguel/autokeyboardlang/releases/download/${TAG}/SHA256SUMS" -o SHA256SUMS
-          echo "SEQUOIA_SHA=$(grep 'arm64_sequoia' SHA256SUMS | awk '{print $1}')" >> $GITHUB_ENV
-          echo "TAHOE_SHA=$(grep 'arm64_tahoe' SHA256SUMS | awk '{print $1}')" >> $GITHUB_ENV
+          echo "CASK_SHA=$(grep 'autokeyboardlang' SHA256SUMS | awk '{print $1}')" >> $GITHUB_ENV
 
-      - name: Update formula
+      - name: Write cask
         env:
-          FORMULA: Formula/autokeyboardlang.rb
           VERSION: ${{ env.VERSION }}
-          SEQUOIA_SHA: ${{ env.SEQUOIA_SHA }}
-          TAHOE_SHA: ${{ env.TAHOE_SHA }}
+          CASK_SHA: ${{ env.CASK_SHA }}
         run: |
-          python3 - <<'EOF'
-          import re, os
-          formula_path = os.environ['FORMULA']
-          formula = open(formula_path).read()
-          version     = os.environ['VERSION']
-          sequoia_sha = os.environ['SEQUOIA_SHA']
-          tahoe_sha   = os.environ['TAHOE_SHA']
-
-          formula = re.sub(r'version "[^"]*"', f'version "{version}"', formula)
-          formula = re.sub(
-              r'(arm64_tahoe[^\n]*\n\s+sha256 ")[^"]+(")',
-              rf'\g<1>{tahoe_sha}\g<2>', formula)
-          formula = re.sub(
-              r'(arm64_sequoia[^\n]*\n\s+sha256 ")[^"]+(")',
-              rf'\g<1>{sequoia_sha}\g<2>', formula)
-
-          open(formula_path, 'w').write(formula)
-          print(f"Updated to v{version}  sequoia={sequoia_sha[:8]}…  tahoe={tahoe_sha[:8]}…")
-          EOF
+          python3 - <<'PYEOF'
+          import os, pathlib
+          v   = os.environ['VERSION']
+          sha = os.environ['CASK_SHA']
+          pathlib.Path('Casks').mkdir(exist_ok=True)
+          content = (
+            'cask "autokeyboardlang" do\n'
+            '  version "{v}"\n'
+            '  sha256 "{s}"\n'
+            '\n'
+            '  url "https://github.com/jakguel/autokeyboardlang/releases/download/v{v}/autokeyboardlang-v{v}.zip"\n'
+            '  name "autokeyboardlang"\n'
+            '  desc "Automatic keyboard input language switching for macOS"\n'
+            '  homepage "https://github.com/jakguel/autokeyboardlang"\n'
+            '\n'
+            '  depends_on macos: ">= :sequoia"\n'
+            '  depends_on arch: :arm64\n'
+            '\n'
+            '  app "autokeyboardlang.app"\n'
+            '\n'
+            '  zap trash: [\n'
+            '    "~/Library/LaunchAgents/com.jakguel.autokeyboardlang.plist",\n'
+            '    "~/Library/Preferences/com.jakguel.autokeyboardlang.plist",\n'
+            '  ]\n'
+            'end\n'
+          ).format(v=v, s=sha)
+          pathlib.Path('Casks/autokeyboardlang.rb').write_text(content)
+          print('Wrote Casks/autokeyboardlang.rb  v={v}  sha={s}...'.format(v=v, s=sha[:8]))
+          PYEOF
 
       - name: Commit and push
         env:
@@ -157,6 +143,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add Formula/autokeyboardlang.rb
-          git commit -m "chore: bump autokeyboardlang to ${COMMIT_TAG}"
+          git rm --ignore-unmatch Formula/autokeyboardlang.rb
+          git add Casks/autokeyboardlang.rb
+          git commit -m "chore: convert to cask autokeyboardlang ${COMMIT_TAG}"
           git push
