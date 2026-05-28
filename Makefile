@@ -7,12 +7,12 @@ BUNDLE_PLIST := $(BUNDLE_DIR)/Info.plist
 BUNDLE_PKGINFO := $(BUNDLE_DIR)/PkgInfo
 BUNDLE_ID    := com.jakguel.autokeyboardlang
 
-.PHONY: bundle install clean-bundle help
+.PHONY: bundle install clean-bundle help _build
 
 ## Build the release binary and package it into an .app bundle.
 ## The bundle is required for macOS to grant Input Monitoring permission
 ## to autokeyboardlang instead of the calling Terminal app.
-bundle: $(BINARY_SRC)
+bundle: _build
 	@echo "→ Creating $(BUNDLE_NAME)..."
 	@mkdir -p $(BUNDLE_DIR)/MacOS
 	@cp $(BINARY_SRC) $(BUNDLE_BIN)
@@ -26,7 +26,7 @@ bundle: $(BINARY_SRC)
 	@echo "  cp -r $(BUNDLE_NAME) /Applications/"
 	@echo "  /Applications/$(BUNDLE_NAME)/Contents/MacOS/$(BINARY_NAME)"
 
-$(BINARY_SRC):
+_build:
 	swift build --configuration release --arch arm64
 
 ## Install the bundle to /Applications (requires make bundle first).
