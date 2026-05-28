@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import AppKit
 import ArgumentParser
 import AutokbiswCore
 import Foundation
@@ -60,17 +61,10 @@ struct Autokbisw: ParsableCommand {
             print("useLocation: \(location), verbosity: \(verbose)")
         }
 
-        if !InputMonitoringPermission.isGranted {
-            InputMonitoringPermission.request()
-            fputs("Error: Input Monitoring permission required.\n", stderr)
-            fputs("Grant access in: System Settings → Privacy & Security → Input Monitoring\n", stderr)
-            fputs("Then restart autokeyboardlang.\n", stderr)
-            throw ExitCode.failure
-        }
-
-        let monitor = Autokbisw.createMonitor(useLocation: location, verbosity: verbose)
-        monitor?.start()
-        CFRunLoopRun()
+        let delegate = AppDelegate(useLocation: location, verbosity: verbose)
+        NSApplication.shared.delegate = delegate
+        NSApplication.shared.setActivationPolicy(.accessory)
+        NSApplication.shared.run()
     }
 
     struct Enable: ParsableCommand {
