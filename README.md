@@ -16,16 +16,15 @@ Automatically switches your macOS keyboard input source (language/layout) when y
 
 ```sh
 brew tap jakguel/autokeyboardlang
-brew install autokeyboardlang
-brew services start autokeyboardlang
+brew install --cask autokeyboardlang
 ```
 
-On first start, macOS will prompt for **Input Monitoring** permission under System Settings → Privacy & Security.
+Open `/Applications/autokeyboardlang.app` on first launch — the tray icon guides you through Input Monitoring setup and autostart.
 
 ### Upgrade
 
 ```sh
-brew upgrade autokeyboardlang
+brew upgrade --cask autokeyboardlang
 ```
 
 ### Build from source
@@ -61,21 +60,12 @@ Options: `--verbose 1|2` (debug/trace output), `--location` (include USB port in
 
 ## Troubleshooting
 
-**Service not working after install**
+**Not switching after install**
 
-```sh
-brew services restart autokeyboardlang
-```
+Autostart is managed by the tray menu. Click **Autostart inaktiv — hier aktivieren** to enable launch-at-login.
 
-If that doesn't help, re-grant Input Monitoring permission by removing and re-adding the binary under System Settings → Privacy & Security → Input Monitoring:
-`/opt/homebrew/opt/autokeyboardlang/bin/autokeyboardlang`
-
-**Service running but not switching layouts**
-
-```sh
-launchctl unload ~/Library/LaunchAgents/homebrew.mxcl.autokeyboardlang.plist
-launchctl load ~/Library/LaunchAgents/homebrew.mxcl.autokeyboardlang.plist
-```
+If Input Monitoring permission is needed, add the app under System Settings → Privacy & Security → Input Monitoring:
+`/Applications/autokeyboardlang.app/Contents/MacOS/autokeyboardlang`
 
 **Logitech device not detected correctly**
 
