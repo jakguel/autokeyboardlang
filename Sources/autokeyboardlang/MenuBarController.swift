@@ -43,12 +43,17 @@ final class MenuBarController: NSObject {
 
         if !state.hasPermission {
             let item = NSMenuItem(
-                title: "⚠ Fehlende Berechtigungen",
+                title: "⚠ Input Monitoring fehlt — hier klicken",
                 action: #selector(openInputMonitoringSettings),
                 keyEquivalent: ""
             )
             item.target = self
             menu.addItem(item)
+
+            let hint = NSMenuItem(title: "System Settings → Datenschutz → Eingabeüberwachung", action: nil, keyEquivalent: "")
+            hint.isEnabled = false
+            hint.indentationLevel = 1
+            menu.addItem(hint)
             menu.addItem(.separator())
         }
 
@@ -83,8 +88,12 @@ final class MenuBarController: NSObject {
     }
 
     @objc private func openInputMonitoringSettings() {
-        NSWorkspace.shared.open(
-            URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_InputMonitoring")!
-        )
+        // macOS 14+ uses the new Settings URL format
+        // Fallback to old format if the new one fails
+        let newURL = URL(string: "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension?Privacy_InputMonitoring")!
+        let oldURL = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_InputMonitoring")!
+        if !NSWorkspace.shared.open(newURL) {
+            NSWorkspace.shared.open(oldURL)
+        }
     }
 }
