@@ -36,7 +36,10 @@ final class MenuBarController: NSObject {
         var hasPermission: Bool
         var currentInputSource: String
         var keyboards: [(id: String, isEnabled: Bool)]
+        var isAutostart: Bool = false
     }
+
+    var onEnableAutostart: (() -> Void)?
 
     func update(state: State) {
         let menu = NSMenu()
@@ -81,10 +84,25 @@ final class MenuBarController: NSObject {
             }
         }
 
+        if !state.isAutostart {
+            menu.addItem(.separator())
+            let autostartItem = NSMenuItem(
+                title: "Autostart inaktiv — hier aktivieren",
+                action: #selector(enableAutostart),
+                keyEquivalent: ""
+            )
+            autostartItem.target = self
+            menu.addItem(autostartItem)
+        }
+
         menu.addItem(.separator())
         menu.addItem(NSMenuItem(title: "Beenden", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
 
         statusItem.menu = menu
+    }
+
+    @objc private func enableAutostart() {
+        onEnableAutostart?()
     }
 
     @objc private func openInputMonitoringSettings() {
