@@ -25,24 +25,50 @@ jobs:
       - name: Build bundle
         run: make bundle
 
-      - name: Generate archive name
+      - name: Generate artifact names
         id: archive-name
         env:
           TAG: ${{ inputs.tag_name || github.ref_name }}
-        run: echo "value=autokeyboardlang-${TAG}.zip" >> $GITHUB_OUTPUT
+        run: |
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+          echo "zip=autokeyboardlang-${TAG}.zip" >> $GITHUB_OUTPUT
+          echo "dmg=autokeyboardlang-${TAG}.dmg" >> $GITHUB_OUTPUT
 
-      - name: Create archive
-        run: zip -r ${{ steps.archive-name.outputs.value }} autokeyboardlang.app
+      - name: Create ZIP
+        run: zip -r ${{ steps.archive-name.outputs.zip }} autokeyboardlang.app
 
-      - name: Generate checksum
-        run: shasum -a 256 ${{ steps.archive-name.outputs.value }} > SHA256SUM
+      - name: Create DMG
+        run: |
+          mkdir -p dmg_src
+          cp -r autokeyboardlang.app dmg_src/
+          ln -s /Applications dmg_src/Applications
+          hdiutil create \
+            -volname "autokeyboardlang" \
+            -srcfolder dmg_src \
+            -ov -format UDZO \
+            "${{ steps.archive-name.outputs.dmg }}"
+          rm -rf dmg_src
 
-      - name: Upload archive to release
+      - name: Generate checksums
+        run: |
+          shasum -a 256 ${{ steps.archive-name.outputs.zip }} > SHA256SUM
+          shasum -a 256 ${{ steps.archive-name.outputs.dmg }} >> SHA256SUM
+
+      - name: Upload ZIP to release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ./${{ steps.archive-name.outputs.value }}
-          asset_name: ${{ steps.archive-name.outputs.value }}
+          file: ./${{ steps.archive-name.outputs.zip }}
+          asset_name: ${{ steps.archive-name.outputs.zip }}
+          tag: refs/tags/${{ inputs.tag_name || github.ref_name }}
+          overwrite: true
+
+      - name: Upload DMG to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./${{ steps.archive-name.outputs.dmg }}
+          asset_name: ${{ steps.archive-name.outputs.dmg }}
           tag: refs/tags/${{ inputs.tag_name || github.ref_name }}
           overwrite: true
 
@@ -100,7 +126,7 @@ jobs:
           TAG: ${{ inputs.tag_name || github.ref_name }}
         run: |
           curl -fSL "https://github.com/jakguel/autokeyboardlang/releases/download/${TAG}/SHA256SUMS" -o SHA256SUMS
-          echo "CASK_SHA=$(grep 'autokeyboardlang' SHA256SUMS | awk '{print $1}')" >> $GITHUB_ENV
+          echo "CASK_SHA=$(grep '\.zip' SHA256SUMS | awk '{print $1}')" >> $GITHUB_ENV
 
       - name: Write cask
         env:
@@ -145,5 +171,5 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git rm --ignore-unmatch Formula/autokeyboardlang.rb
           git add Casks/autokeyboardlang.rb
-          git commit -m "chore: convert to cask autokeyboardlang ${COMMIT_TAG}"
+          git commit -m "chore: update cask autokeyboardlang ${COMMIT_TAG}"
           git push
