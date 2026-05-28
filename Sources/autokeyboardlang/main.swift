@@ -55,6 +55,15 @@ struct Autokbisw: ParsableCommand {
     var location = false
 
     mutating func run() throws {
+        // Single-instance guard: exit if another copy is already running.
+        // This handles the case where launchd's RunAtLoad starts a second
+        // instance while the user already has the app open.
+        let bundleId = Bundle.main.bundleIdentifier ?? "com.jakguel.autokeyboardlang"
+        if NSRunningApplication.runningApplications(withBundleIdentifier: bundleId).count > 1 {
+            print("autokeyboardlang: another instance is already running, exiting.")
+            Darwin.exit(0)
+        }
+
         print("autokeyboardlang started.")
 
         if verbose > 0 {
