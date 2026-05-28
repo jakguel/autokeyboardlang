@@ -30,8 +30,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
         menuBar = MenuBarController(appName: "autokeyboardlang", version: version)
 
+        menuBar?.onEnableAutostart = { [weak self] in
+            try? AutostartManager.enable()
+            self?.refreshMenu()
+        }
+
         guard InputMonitoringPermission.isGranted else {
-            menuBar?.update(state: .init(hasPermission: false, currentInputSource: "", keyboards: []))
+            menuBar?.update(state: .init(hasPermission: false, currentInputSource: "", keyboards: [],
+                                         isAutostart: AutostartManager.isEnabled))
             InputMonitoringPermission.request()
             return
         }
@@ -62,7 +68,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menuBar?.update(state: .init(
             hasPermission: true,
             currentInputSource: monitor.currentInputSourceName,
-            keyboards: monitor.knownKeyboards
+            keyboards: monitor.knownKeyboards,
+            isAutostart: AutostartManager.isEnabled
         ))
     }
 }
