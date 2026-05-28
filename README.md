@@ -70,7 +70,7 @@ Options: `--verbose 1|2` (debug/trace output), `--location` (include USB port in
 
 **Not switching after install**
 
-Autostart is managed by the tray menu. Click **Autostart inaktiv — hier aktivieren** to enable launch-at-login.
+Autostart is managed by the tray menu. Click **Autostart disabled — click to enable** in the tray menu to enable launch-at-login.
 
 If Input Monitoring permission is needed, add the app under System Settings → Privacy & Security → Input Monitoring:
 `/Applications/autokeyboardlang.app/Contents/MacOS/autokeyboardlang`

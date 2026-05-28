@@ -46,14 +46,14 @@ final class MenuBarController: NSObject {
 
         if !state.hasPermission {
             let item = NSMenuItem(
-                title: "⚠ Input Monitoring fehlt — hier klicken",
+                title: "⚠ Input Monitoring missing — click here",
                 action: #selector(openInputMonitoringSettings),
                 keyEquivalent: ""
             )
             item.target = self
             menu.addItem(item)
 
-            let hint = NSMenuItem(title: "System Settings → Datenschutz → Eingabeüberwachung", action: nil, keyEquivalent: "")
+            let hint = NSMenuItem(title: "System Settings → Privacy & Security → Input Monitoring", action: nil, keyEquivalent: "")
             hint.isEnabled = false
             hint.indentationLevel = 1
             menu.addItem(hint)
@@ -65,14 +65,14 @@ final class MenuBarController: NSObject {
         menu.addItem(header)
         menu.addItem(.separator())
 
-        let src = state.currentInputSource.isEmpty ? "(unbekannt)" : state.currentInputSource
-        let sourceItem = NSMenuItem(title: "Eingabequelle: \(src)", action: nil, keyEquivalent: "")
+        let src = state.currentInputSource.isEmpty ? "(unknown)" : state.currentInputSource
+        let sourceItem = NSMenuItem(title: "Input source: \(src)", action: nil, keyEquivalent: "")
         sourceItem.isEnabled = false
         menu.addItem(sourceItem)
         menu.addItem(.separator())
 
         if state.keyboards.isEmpty {
-            let emptyItem = NSMenuItem(title: "Keine Tastaturen erkannt", action: nil, keyEquivalent: "")
+            let emptyItem = NSMenuItem(title: "No keyboards detected", action: nil, keyEquivalent: "")
             emptyItem.isEnabled = false
             menu.addItem(emptyItem)
         } else {
@@ -87,7 +87,7 @@ final class MenuBarController: NSObject {
         if !state.isAutostart {
             menu.addItem(.separator())
             let autostartItem = NSMenuItem(
-                title: "Autostart inaktiv — hier aktivieren",
+                title: "Autostart disabled — click to enable",
                 action: #selector(enableAutostart),
                 keyEquivalent: ""
             )
@@ -96,7 +96,7 @@ final class MenuBarController: NSObject {
         }
 
         menu.addItem(.separator())
-        menu.addItem(NSMenuItem(title: "Beenden", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
+        menu.addItem(NSMenuItem(title: "Quit", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
 
         statusItem.menu = menu
     }
