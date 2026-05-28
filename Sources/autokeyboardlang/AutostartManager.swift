@@ -60,12 +60,9 @@ enum AutostartManager {
             throw AutostartError.encodingFailed
         }
         try data.write(to: plistURL, options: .atomic)
-
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
-        process.arguments = ["load", plistURL.path]
-        try process.run()
-        process.waitUntilExit()
+        // launchctl load is intentionally omitted: RunAtLoad=true in the plist
+        // causes launchd to start the app at next login without triggering an
+        // immediate second instance while the app is already running.
     }
 }
 
