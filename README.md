@@ -86,4 +86,4 @@ Some Logitech devices misidentify as keyboard or mouse. Use `autokeyboardlang en
 
 ## Acknowledgements
 
-Originally developed by [Jean Helou](https://github.com/jeantil/autokbisw). Extended by [ohueter](https://github.com/ohueter/autokbisw).
+Originally developed by [Jean Helou](https://github.com/jeantil/autokbisw). Extended by [ohueter](https://github.com/ohueter/autokbisw). Further developed by [Jiyan Akgül](https://github.com/jakguel).
