@@ -14,12 +14,20 @@ Automatically switches your macOS keyboard input source (language/layout) when y
 
 ## Installation
 
+### Homebrew (recommended)
+
 ```sh
 brew tap jakguel/autokeyboardlang
 brew install --cask autokeyboardlang
 ```
 
-Open `/Applications/autokeyboardlang.app` on first launch — the tray icon guides you through Input Monitoring setup and autostart.
+### Direct download
+
+Download the latest `.dmg` from the [Releases page](https://github.com/jakguel/autokeyboardlang/releases/latest), open it and drag `autokeyboardlang.app` to `/Applications/`.
+
+> **Note:** The app is ad-hoc signed. On first launch macOS may show a security warning — go to System Settings → Privacy & Security → **Open Anyway**.
+
+Open `/Applications/autokeyboardlang.app` — the tray icon guides you through Input Monitoring setup and autostart.
 
 ### Upgrade
 
