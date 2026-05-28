@@ -390,3 +390,40 @@ extension IOKeyEventMonitor {
         }
     }
 }
+
+
+// MARK: - Public State
+
+extension IOKeyEventMonitor {
+
+    /// Last segment of the active input source identifier.
+    /// E.g. "German" from "com.apple.keylayout.German".
+    /// Empty string if no keyboard is active yet.
+    ///
+    /// kb2is stores TISInputSource objects (not Strings) —
+    /// TISGetInputSourceProperty extracts the string identifier.
+    public var currentInputSourceName: String {
+        assignmentLock.lock()
+        defer { assignmentLock.unlock() }
+        guard let kb = lastActiveKeyboard,
+              let source = kb2is[kb],
+              let isId = unmanagedStringToString(
+                  TISGetInputSourceProperty(source, kTISPropertyInputSourceID)
+              ) else { return "" }
+        return isId.components(separatedBy: ".").last ?? isId
+    }
+
+    /// All known keyboards with their enabled state, sorted by id.
+    /// Returns the keys of kb2is (keyboard identifier strings).
+    public var knownKeyboards: [(id: String, isEnabled: Bool)] {
+        assignmentLock.lock()
+        defer { assignmentLock.unlock() }
+        return kb2is.keys.map { id in
+            (id: id, isEnabled: deviceEnabled[id] ?? true)
+        }.sorted { $0.id < $1.id }
+    }
+
+    /// The name of the distributed notification posted when settings change.
+    /// Observe with DistributedNotificationCenter.default().
+    public static let settingsChangedNotificationName = "com.autokeyboardlang.settingsChanged"
+}

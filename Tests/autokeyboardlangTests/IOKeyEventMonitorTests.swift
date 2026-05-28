@@ -238,4 +238,17 @@ class IOKeyEventMonitorTests: XCTestCase {
             InputMonitoringPermission.request()
         }
     }
+
+    func testKnownKeyboardsEmptyOnInit() {
+        XCTAssertTrue(monitor.knownKeyboards.isEmpty)
+    }
+
+    func testCurrentInputSourceNameEmptyOnInit() {
+        XCTAssertEqual(monitor.currentInputSourceName, "")
+    }
+
+    func testSettingsChangedNotificationName() {
+        XCTAssertEqual(IOKeyEventMonitor.settingsChangedNotificationName,
+                       "com.autokeyboardlang.settingsChanged")
+    }
 }
